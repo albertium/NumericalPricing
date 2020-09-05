@@ -9,7 +9,7 @@ using namespace numerical;
 
 namespace core {
     template<typename PayoffT, typename StepbackT>
-    PricingOutput<EmptyTag> AnalyticalPricer<PayoffT, StepbackT>::price(EmptyTag tag) {
+    PricingOutput<EmptyTag> AnalyticalPricer<PayoffT, StepbackT>::price(const EmptyTag& tag) {
         double s = params_.s, k = params_.k, r = params_.r, q = params_.q, sig = params_.sig, t = params_.t;
         double total_vol = sig * sqrt(t);
         double d1 = (log(s / k) + (r - q) * t) / total_vol + 0.5 * total_vol;

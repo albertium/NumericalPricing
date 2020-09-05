@@ -6,6 +6,9 @@
 #define HW1_COMMON_H
 
 #include "base.h"
+#include "numerical.h"
+
+using namespace numerical;
 
 
 namespace core {
@@ -14,7 +17,7 @@ namespace core {
     public:
         explicit CallPayoff(const Params &params) : Payoff(params) {}
 
-        ArrayXd operator()(ArrayXd s) override {
+        ArrayXd operator()(const ArrayXd& s) override {
             return (s - params_.k).max(0);
         }
     };
@@ -23,8 +26,34 @@ namespace core {
     public:
         explicit PutPayoff(const Params &params) : Payoff(params) {}
 
-        ArrayXd operator()(ArrayXd s) override {
+        ArrayXd operator()(const ArrayXd& s) override {
             return (params_.k - s).max(0);
+        }
+    };
+
+    class CallBSPayoff : public Payoff {
+    public:
+        explicit CallBSPayoff(const Params &params) : Payoff(params) {}
+
+        ArrayXd operator()(const ArrayXd &s) override {
+            double k = params_.k, r = params_.r, q = params_.q, sig = params_.sig, t = params_.t;
+            double total_vol = sig * sqrt(t);
+            ArrayXd d1 = ((s / k).log() + (r - q) * t) / total_vol + 0.5 * total_vol;
+            ArrayXd d2 = d1 - total_vol;
+            return s * norm_cdf(d1) * exp(-q * t) - k * norm_cdf(d2) * exp(-r * t);
+        }
+    };
+
+    class PutBSPayoff : public Payoff {
+    public:
+        explicit PutBSPayoff(const Params &params) : Payoff(params) {}
+
+        ArrayXd operator()(const ArrayXd &s) override {
+            double k = params_.k, r = params_.r, q = params_.q, sig = params_.sig, t = params_.t;
+            double total_vol = sig * sqrt(t);
+            ArrayXd d1 = ((s / k).log() + (r - q) * t) / total_vol + 0.5 * total_vol;
+            ArrayXd d2 = d1 - total_vol;
+            return k * norm_cdf(-d2) * exp(-r * t) - s * norm_cdf(-d1) * exp(-q * t);
         }
     };
 
@@ -33,7 +62,7 @@ namespace core {
     public:
         explicit EuropeanStep(const Params &params) : Stepback(params) {}
 
-        ArrayXd operator()(ArrayXd values, ArrayXd s, Payoff intrinsic_func) override {
+        ArrayXd operator()(const ArrayXd& values, const ArrayXd& s, std::shared_ptr<Payoff> adjust_func) override {
             return values;
         }
     };
@@ -42,8 +71,8 @@ namespace core {
     public:
         explicit AmericanStep(const Params &params) : Stepback(params) {}
 
-        ArrayXd operator()(ArrayXd values, ArrayXd s, Payoff intrinsic_func) override {
-            return values.max(intrinsic_func(s));
+        ArrayXd operator()(const ArrayXd& values, const ArrayXd& s, std::shared_ptr<Payoff> adjust_func) override {
+            return values.max((*adjust_func)(s));
         }
     };
 }

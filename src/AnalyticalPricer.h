@@ -28,7 +28,7 @@ namespace core {
                     "Analytical pricer only supports vanilla call and put");
         }
 
-        PricingOutput<EmptyTag> price(EmptyTag tag) override;
+        PricingOutput<EmptyTag> price(const EmptyTag& tag) override;
     };
 }
 
