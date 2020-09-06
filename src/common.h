@@ -17,7 +17,7 @@ namespace core {
     public:
         explicit CallPayoff(const Params &params) : Payoff(params) {}
 
-        ArrayXd operator()(const ArrayXd& s) override {
+        ArrayXd operator()(const ArrayXd &s) const override {
             return (s - params_.k).max(0);
         }
     };
@@ -26,7 +26,7 @@ namespace core {
     public:
         explicit PutPayoff(const Params &params) : Payoff(params) {}
 
-        ArrayXd operator()(const ArrayXd& s) override {
+        ArrayXd operator()(const ArrayXd &s) const override {
             return (params_.k - s).max(0);
         }
     };
@@ -36,7 +36,7 @@ namespace core {
     public:
         explicit EuropeanStep(const Params &params) : Stepback(params) {}
 
-        ArrayXd operator()(const ArrayXd& values, const ArrayXd& s, std::shared_ptr<Payoff> adjust_func) override {
+        ArrayXd operator()(const ArrayXd &values, const ArrayXd &s, const Payoff *adjust_func) const override {
             return values;
         }
     };
@@ -45,7 +45,7 @@ namespace core {
     public:
         explicit AmericanStep(const Params &params) : Stepback(params) {}
 
-        ArrayXd operator()(const ArrayXd& values, const ArrayXd& s, std::shared_ptr<Payoff> adjust_func) override {
+        ArrayXd operator()(const ArrayXd &values, const ArrayXd &s, const Payoff *adjust_func) const override {
             return values.max((*adjust_func)(s));
         }
     };

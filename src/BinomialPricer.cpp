@@ -35,7 +35,7 @@ namespace core {
             ArrayXd values = stepback_(
                     disc * (p * last.segment(0, i + 1) + (1 - p) * last.segment(1, i + 1)),
                     spot_grid[i],
-                    adjust_
+                    adjust_.get()
             );
             value_grid.emplace_back(std::move(values));
         }
@@ -92,7 +92,7 @@ namespace core {
             ArrayXd values = stepback_(
                     disc * (p * last.segment(0, i + 1) + (1 - p) * last.segment(1, i + 1)),
                     spot_grid[i],
-                    adjust_
+                    adjust_.get()
             );
             value_grid.emplace_back(std::move(values));
         }

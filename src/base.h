@@ -18,24 +18,40 @@ using namespace Eigen;
 
 namespace core {
 
+    // ========== Parameterizable ==========
+    // Params is used to parameterize a Parameterizable
     struct Params {
-        double s;
-        double k;
-        double r;
-        double q;
-        double sig;
-        double t;
+        double s, k, r, q, sig, t;
     };
 
+    // ========== Parameterizable ==========
+    // Parameterized represents class that can be parameterized
+    class Parameterizable {
+    protected:
+        Params params_;
+
+    public:
+        explicit Parameterizable(const Params &params) : params_(params) {};
+    };
+
+    // ========== Tag Base Class ==========
+    // Tag is the header of pricing output
     struct Tag {
+        virtual void write_to_stream(std::ostream &os) const = 0;
+
+        virtual std::string header() const = 0;
+
         friend std::ostream &operator<<(std::ostream &os, const Tag &tag) {
             tag.write_to_stream(os);
             return os;
         }
+    };
 
-        virtual void write_to_stream(std::ostream& os) const = 0;
+    // ========== Default Tag Class ==========
+    struct EmptyTag : public Tag {
+        void write_to_stream(std::ostream &os) const override { os << -1; }
 
-        virtual std::string header() const = 0;
+        std::string header() const override { return "Tag"; }
     };
 
     template<typename TagT>
@@ -43,13 +59,7 @@ namespace core {
         TagT tag;
         double price, delta, gamma, theta;
 
-        PricingOutput<TagT> operator+(const PricingOutput<TagT> &other) {
-            return {tag,
-                    (price + other.price) / 2,
-                    (delta + other.delta) / 2,
-                    (gamma + other.gamma) / 2,
-                    (theta + other.theta) / 2};
-        }
+        PricingOutput<TagT> operator+(const PricingOutput<TagT> &other);
 
         friend std::ostream &operator<<(std::ostream &os, const PricingOutput &output) {
             os << output.tag << std::setprecision(6) << std::fixed
@@ -58,55 +68,34 @@ namespace core {
         }
     };
 
-    struct EmptyTag : public Tag {
-        void write_to_stream(std::ostream &os) const override {
-            os << -1;
-        }
 
-        std::string header() const override {
-            return "Tag";
-        }
+    // ========== Payoff Function Base Class ==========
+    struct Payoff : Parameterizable {
+        explicit Payoff(const Params &params) : Parameterizable(params) {}
+
+        virtual ArrayXd operator()(const ArrayXd &s) const = 0;
     };
 
-    class Parameterized {
-    protected:
-        Params params_;
 
-    public:
-        explicit Parameterized(const Params &params) : params_(params) {};
+    // ========== Stepback Function Base Class ==========
+    struct Stepback : Parameterizable {
+        explicit Stepback(const Params &params) : Parameterizable(params) {}
+
+        virtual ArrayXd operator()(const ArrayXd &values, const ArrayXd &s, const Payoff *adjust_func) const = 0;
     };
 
-    struct Payoff : Parameterized {
-        explicit Payoff(const Params &params) : Parameterized(params) {}
 
-        virtual ArrayXd operator()(const ArrayXd &s) = 0;
-    };
-
-    struct Stepback : Parameterized {
-        explicit Stepback(const Params &params) : Parameterized(params) {}
-
-        virtual ArrayXd operator()(const ArrayXd &values, const ArrayXd &s, std::shared_ptr<Payoff> adjust_func) = 0;
-    };
-
+    // ========== Pricer Base Class ==========
     template<typename PayoffT, typename AdjustT, typename StepbackT, typename TagT=EmptyTag>
-    class Pricer : public Parameterized {
+    class Pricer : public Parameterizable {
     protected:
         const double UNDEFINED = std::numeric_limits<double>::quiet_NaN();
         PayoffT payoff_;
-        std::shared_ptr<Payoff> adjust_;
+        std::unique_ptr<AdjustT> adjust_;
         StepbackT stepback_;
 
     public:
-        explicit Pricer(const Params &params) : Parameterized(params),
-                                                payoff_(PayoffT(params)),
-                                                adjust_(std::make_shared<AdjustT>(params)),
-                                                stepback_(StepbackT(params)) {
-
-            static_assert(std::is_base_of<Payoff, PayoffT>::value, "PayoffT must be subclass of Payoff");
-            static_assert(std::is_base_of<Payoff, AdjustT>::value, "AdjustT must be subclass of Payoff");
-            static_assert(std::is_base_of<Stepback, StepbackT>::value, "StepbackT must be subclass of Stepback");
-            static_assert(std::is_base_of<Tag, TagT>::value, "TagT must be subclass of Tag");
-        };
+        explicit Pricer(const Params &params);
 
         virtual PricingOutput<TagT> price(const TagT &tag) = 0;
 

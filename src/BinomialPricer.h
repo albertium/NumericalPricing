@@ -21,18 +21,13 @@ using namespace Eigen;
 namespace core {
 
     // Output tag
-    struct TreeTag : public Tag{
+    struct TreeTag : public Tag {
         int n;
 
         TreeTag(int n) : n(n) {}  // NOLINT(google-explicit-constructor)
+        void write_to_stream(std::ostream &os) const override { os << n; }
 
-        void write_to_stream(std::ostream &os) const override {
-            os << n;
-        }
-
-        std::string header() const override {
-            return "Tag";
-        }
+        std::string header() const override { return "Tag"; }
     };
 
 
@@ -47,7 +42,6 @@ namespace core {
 
     public:
         explicit BinomialPricer(const Params &params) : Pricer<PayoffT, AdjustT, StepbackT, TreeTag>(params) {}
-
         PricingOutput<TreeTag> price(const TreeTag &tag) override;
     };
 

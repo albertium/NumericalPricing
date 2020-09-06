@@ -5,11 +5,31 @@
 
 
 namespace core {
+    template<typename TagT>
+    PricingOutput<TagT> PricingOutput<TagT>::operator+(const PricingOutput<TagT> &other) {
+        {
+            return {tag,
+                    (price + other.price) / 2,
+                    (delta + other.delta) / 2,
+                    (gamma + other.gamma) / 2,
+                    (theta + other.theta) / 2};
+        }
+    }
+
     template<typename PayoffT, typename AdjustT, typename StepbackT, typename TagT>
-    void Pricer<PayoffT, AdjustT, StepbackT, TagT>::profile(const std::vector<TagT> &tags, const std::string& name) {
+    Pricer<PayoffT, AdjustT, StepbackT, TagT>::Pricer(const Params &params)
+            :Parameterizable(params), payoff_(params), adjust_(std::make_unique<AdjustT>(params)), stepback_(params) {
+        static_assert(std::is_base_of<Payoff, PayoffT>::value, "PayoffT must be subclass of Payoff");
+        static_assert(std::is_base_of<Payoff, AdjustT>::value, "AdjustT must be subclass of Payoff");
+        static_assert(std::is_base_of<Stepback, StepbackT>::value, "StepbackT must be subclass of Stepback");
+        static_assert(std::is_base_of<Tag, TagT>::value, "TagT must be subclass of Tag");
+    }
+
+    template<typename PayoffT, typename AdjustT, typename StepbackT, typename TagT>
+    void Pricer<PayoffT, AdjustT, StepbackT, TagT>::profile(const std::vector<TagT> &tags, const std::string &name) {
         std::ofstream file{"../output/" + name + ".csv"};
         file << tags[0].header() << ",Price,Delta,Gamma,Theta" << std::endl;
-        for (const TagT& tag : tags)
+        for (const TagT &tag : tags)
             file << price(tag) << std::endl;
     }
 }
