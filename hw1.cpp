@@ -1,11 +1,10 @@
 #include <iostream>
 #include <vector>
 
-#include "include/core.h"
+#include "core.h"
 
 using namespace std;
 using namespace core;
-using namespace Eigen;
 
 
 int main() {

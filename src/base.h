@@ -54,7 +54,7 @@ namespace core {
         std::string header() const override { return "Tag"; }
     };
 
-    template<typename TagT>
+    template<typename TagT=EmptyTag>
     struct PricingOutput {
         TagT tag;
         double price, delta, gamma, theta;
