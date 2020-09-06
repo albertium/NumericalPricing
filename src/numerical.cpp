@@ -14,7 +14,7 @@ double numerical::norm_pdf(double x) {
 }
 
 ArrayXd numerical::norm_cdf(const ArrayXd &x) {
-    return (x.erf() / M_SQRT2 + 1) * 0.5;
+    return ((x / M_SQRT2).erf() + 1) * 0.5;
 }
 
 ArrayXd numerical::norm_pdf(const ArrayXd &x) {

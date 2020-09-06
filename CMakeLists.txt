@@ -8,6 +8,6 @@ find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 add_executable(HW1
         hw1.cpp
         src/base.h src/common.h src/analytical.h src/analytical.cpp
-        src/BinomialPricer.h src/BinomialPricer.cpp src/AnalyticalPricer.cpp src/AnalyticalPricer.h src/numerical.h src/numerical.cpp)
+        src/BinomialPricer.h src/BinomialPricer.cpp src/AnalyticalPricer.cpp src/AnalyticalPricer.h src/numerical.h src/numerical.cpp src/base.cpp include/core.h)
 
 target_link_libraries(HW1 Eigen3::Eigen)

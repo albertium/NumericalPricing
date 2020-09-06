@@ -20,15 +20,23 @@ using namespace Eigen;
 
 namespace core {
 
-    struct TreeTag {
+    // Output tag
+    struct TreeTag : public Tag{
         int n;
 
-        friend std::ostream &operator<<(std::ostream &os, const TreeTag &tag) {
-            os << tag.n;
-            return os;
+        TreeTag(int n) : n(n) {}  // NOLINT(google-explicit-constructor)
+
+        void write_to_stream(std::ostream &os) const override {
+            os << n;
+        }
+
+        std::string header() const override {
+            return "Tag";
         }
     };
 
+
+    // ========== Vanilla Binomial Pricer ==========
     template<typename PayoffT, typename AdjustT, typename StepbackT>
     class BinomialPricer : public Pricer<PayoffT, AdjustT, StepbackT, TreeTag> {
         using Pricer<PayoffT, AdjustT, StepbackT, TreeTag>::params_;
@@ -41,10 +49,10 @@ namespace core {
         explicit BinomialPricer(const Params &params) : Pricer<PayoffT, AdjustT, StepbackT, TreeTag>(params) {}
 
         PricingOutput<TreeTag> price(const TreeTag &tag) override;
-
-        void profile(const std::vector<int> &ns);
     };
 
+
+    // ========== Averaging meta pricer ==========
     template<typename PayoffT, typename AdjustT, typename StepbackT>
     class BinomialAveragingPricer : public Pricer<PayoffT, AdjustT, StepbackT, TreeTag> {
         using Pricer<PayoffT, AdjustT, StepbackT, TreeTag>::params_;
@@ -58,17 +66,21 @@ namespace core {
         }
     };
 
+
+    // ========== Binomial pricer with Black Scholes ==========
     template<typename PayoffT, typename AdjustT, typename StepbackT>
     class BinomialBSPricer : public Pricer<PayoffT, AdjustT, StepbackT, TreeTag> {
+        using Pricer<PayoffT, AdjustT, StepbackT, TreeTag>::params_;
+        using Pricer<PayoffT, AdjustT, StepbackT, TreeTag>::adjust_;
+        using Pricer<PayoffT, AdjustT, StepbackT, TreeTag>::stepback_;
+
     public:
         explicit BinomialBSPricer(const Params &params) : Pricer<PayoffT, AdjustT, StepbackT, TreeTag>(params) {
             static_assert(std::is_same<CallPayoff, PayoffT>::value || std::is_same<PutPayoff, PayoffT>::value,
                           "BinomialBSPricer only supports Call or Put payoff.");
         }
 
-        PricingOutput<TreeTag> price(const TreeTag &tag) override {
-            return PricingOutput<TreeTag>();
-        }
+        PricingOutput<TreeTag> price(const TreeTag &tag) override;
     };
 
 }

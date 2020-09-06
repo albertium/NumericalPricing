@@ -6,6 +6,8 @@
 #define HW1_BASE_H
 
 #include <type_traits>
+#include <fstream>
+#include <vector>
 #include <iomanip>
 #include <ostream>
 #include <limits>
@@ -23,6 +25,17 @@ namespace core {
         double q;
         double sig;
         double t;
+    };
+
+    struct Tag {
+        friend std::ostream &operator<<(std::ostream &os, const Tag &tag) {
+            tag.write_to_stream(os);
+            return os;
+        }
+
+        virtual void write_to_stream(std::ostream& os) const = 0;
+
+        virtual std::string header() const = 0;
     };
 
     template<typename TagT>
@@ -45,10 +58,13 @@ namespace core {
         }
     };
 
-    struct EmptyTag {
-        friend std::ostream &operator<<(std::ostream &os, const EmptyTag &tag) {
+    struct EmptyTag : public Tag {
+        void write_to_stream(std::ostream &os) const override {
             os << -1;
-            return os;
+        }
+
+        std::string header() const override {
+            return "Tag";
         }
     };
 
@@ -89,11 +105,13 @@ namespace core {
             static_assert(std::is_base_of<Payoff, PayoffT>::value, "PayoffT must be subclass of Payoff");
             static_assert(std::is_base_of<Payoff, AdjustT>::value, "AdjustT must be subclass of Payoff");
             static_assert(std::is_base_of<Stepback, StepbackT>::value, "StepbackT must be subclass of Stepback");
+            static_assert(std::is_base_of<Tag, TagT>::value, "TagT must be subclass of Tag");
         };
 
-        virtual PricingOutput<TagT> price(const TagT& tag) = 0;
-    };
+        virtual PricingOutput<TagT> price(const TagT &tag) = 0;
 
+        void profile(const std::vector<TagT> &tags, const std::string &name);
+    };
 }
 
 #endif //HW1_BASE_H

@@ -31,32 +31,6 @@ namespace core {
         }
     };
 
-    class CallBSPayoff : public Payoff {
-    public:
-        explicit CallBSPayoff(const Params &params) : Payoff(params) {}
-
-        ArrayXd operator()(const ArrayXd &s) override {
-            double k = params_.k, r = params_.r, q = params_.q, sig = params_.sig, t = params_.t;
-            double total_vol = sig * sqrt(t);
-            ArrayXd d1 = ((s / k).log() + (r - q) * t) / total_vol + 0.5 * total_vol;
-            ArrayXd d2 = d1 - total_vol;
-            return s * norm_cdf(d1) * exp(-q * t) - k * norm_cdf(d2) * exp(-r * t);
-        }
-    };
-
-    class PutBSPayoff : public Payoff {
-    public:
-        explicit PutBSPayoff(const Params &params) : Payoff(params) {}
-
-        ArrayXd operator()(const ArrayXd &s) override {
-            double k = params_.k, r = params_.r, q = params_.q, sig = params_.sig, t = params_.t;
-            double total_vol = sig * sqrt(t);
-            ArrayXd d1 = ((s / k).log() + (r - q) * t) / total_vol + 0.5 * total_vol;
-            ArrayXd d2 = d1 - total_vol;
-            return k * norm_cdf(-d2) * exp(-r * t) - s * norm_cdf(-d1) * exp(-q * t);
-        }
-    };
-
     // Stepbacks
     class EuropeanStep : public Stepback {
     public:
