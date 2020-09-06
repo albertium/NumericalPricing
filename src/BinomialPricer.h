@@ -46,7 +46,7 @@ namespace core {
     };
 
 
-    // ========== Averaging meta pricer ==========
+    // ========== Averaging pricer ==========
     template<typename PayoffT, typename AdjustT, typename StepbackT>
     class BinomialAveragingPricer : public Pricer<PayoffT, AdjustT, StepbackT, TreeTag> {
         using Pricer<PayoffT, AdjustT, StepbackT, TreeTag>::params_;
@@ -56,7 +56,7 @@ namespace core {
 
         PricingOutput<TreeTag> price(const TreeTag &tag) override {
             BinomialPricer<PayoffT, AdjustT, StepbackT> pricer{params_};
-            return pricer.price(tag) + pricer.price({tag.n + 1});
+            return (pricer.price(tag) + pricer.price({tag.n + 1})) / 2;
         }
     };
 
@@ -74,7 +74,22 @@ namespace core {
                           "BinomialBSPricer only supports Call or Put payoff.");
         }
 
-        PricingOutput<TreeTag> price(const TreeTag &tag) override;
+        PricingOutput <TreeTag> price(const TreeTag &tag) override;
+    };
+
+    // ========== Richardson Pricer ==========
+    template<typename PayoffT, typename AdjustT, typename StepbackT>
+    class BinomialBSRPricer : public Pricer<PayoffT, AdjustT, StepbackT, TreeTag> {
+        using Pricer<PayoffT, AdjustT, StepbackT, TreeTag>::params_;
+
+    public:
+        explicit BinomialBSRPricer(const Params &params) : Pricer<PayoffT, AdjustT, StepbackT, TreeTag>(params) {}
+
+        PricingOutput <TreeTag> price(const TreeTag &tag) override {
+            assert(tag.n % 2 == 0);
+            BinomialBSPricer<PayoffT, AdjustT, StepbackT> pricer{params_};
+            return 2 * pricer.price(tag) - pricer.price({tag.n / 2});
+        }
     };
 
 }

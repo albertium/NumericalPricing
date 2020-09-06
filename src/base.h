@@ -61,6 +61,17 @@ namespace core {
 
         PricingOutput<TagT> operator+(const PricingOutput<TagT> &other);
 
+        PricingOutput<TagT> operator-(const PricingOutput<TagT> &other);
+
+        PricingOutput<TagT> operator*(const double &scalar);
+
+        friend PricingOutput<TagT> operator*(const double &scalar, const PricingOutput<TagT> &other) {
+            return {other.tag, other.price * scalar, other.delta * scalar, other.gamma * scalar, other.theta * scalar};
+        }
+
+        PricingOutput<TagT> operator/(const double &scalar);
+
+
         friend std::ostream &operator<<(std::ostream &os, const PricingOutput &output) {
             os << output.tag << std::setprecision(6) << std::fixed
                << "," << output.price << "," << output.delta << "," << output.gamma << "," << output.theta;

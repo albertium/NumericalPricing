@@ -7,13 +7,22 @@
 namespace core {
     template<typename TagT>
     PricingOutput<TagT> PricingOutput<TagT>::operator+(const PricingOutput<TagT> &other) {
-        {
-            return {tag,
-                    (price + other.price) / 2,
-                    (delta + other.delta) / 2,
-                    (gamma + other.gamma) / 2,
-                    (theta + other.theta) / 2};
-        }
+        return {tag, price + other.price, delta + other.delta, gamma + other.gamma, theta + other.theta};
+    }
+
+    template<typename TagT>
+    PricingOutput<TagT> PricingOutput<TagT>::operator-(const PricingOutput<TagT> &other) {
+        return {tag, price - other.price, delta - other.delta, gamma - other.gamma, theta - other.theta};
+    }
+
+    template<typename TagT>
+    PricingOutput<TagT> PricingOutput<TagT>::operator*(const double &scalar) {
+        return {tag, price * scalar, delta * scalar, gamma * scalar, theta * scalar};
+    }
+
+    template<typename TagT>
+    PricingOutput<TagT> PricingOutput<TagT>::operator/(const double &scalar) {
+        return {tag, price / scalar, delta / scalar, gamma / scalar, theta / scalar};
     }
 
     template<typename PayoffT, typename AdjustT, typename StepbackT, typename TagT>
