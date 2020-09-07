@@ -71,6 +71,9 @@ namespace core {
 
         PricingOutput<TagT> operator/(const double &scalar);
 
+        friend PricingOutput<TagT> abs(const PricingOutput<TagT> &other) {
+            return {other.tag, abs(other.price), abs(other.delta), abs(other.gamma), abs(other.theta)};
+        }
 
         friend std::ostream &operator<<(std::ostream &os, const PricingOutput &output) {
             os << output.tag << std::setprecision(6) << std::fixed
@@ -110,7 +113,7 @@ namespace core {
 
         virtual PricingOutput<TagT> price(const TagT &tag) = 0;
 
-        void profile(const std::vector<TagT> &tags, const std::string &name);
+        void profile(const std::vector<TagT> &tags, const PricingOutput<> &exact, const std::string &name);
     };
 }
 

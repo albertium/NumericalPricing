@@ -84,6 +84,7 @@ namespace core {
             bs_payoff = spot_grid.back() * norm_cdf(d1) * exp(-q * dt) - k * norm_cdf(d2) * exp(-r * dt);
         else
             bs_payoff = k * norm_cdf(-d2) * exp(-r * dt) - spot_grid.back() * norm_cdf(-d1) * exp(-q * dt);
+        bs_payoff = stepback_(bs_payoff, spot_grid.back(), adjust_.get());
 
         // Step back
         std::vector<ArrayXd> value_grid{std::move(bs_payoff)};

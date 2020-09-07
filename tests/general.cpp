@@ -44,6 +44,13 @@ TEST(General, PricingOutput) {
     EXPECT_EQ(out.gamma, 1.5);
     EXPECT_EQ(out.theta, 1.5);
 
+    // Test absolute function
+    out = abs(out1 - out2);
+    EXPECT_EQ(out.price, 2);
+    EXPECT_EQ(out.delta, 1);
+    EXPECT_EQ(out.gamma, 0);
+    EXPECT_EQ(out.theta, 1);
+
     // Integration 1
     out = (out1 + out2) / 2;
     EXPECT_EQ(out.price, 2);

@@ -35,10 +35,18 @@ namespace core {
     }
 
     template<typename PayoffT, typename AdjustT, typename StepbackT, typename TagT>
-    void Pricer<PayoffT, AdjustT, StepbackT, TagT>::profile(const std::vector<TagT> &tags, const std::string &name) {
+    void Pricer<PayoffT, AdjustT, StepbackT, TagT>::profile(const std::vector<TagT> &tags,
+                                                            const PricingOutput<> &exact, const std::string &name) {
+        PricingOutput<TagT> benchmark{tags[0], exact.price, exact.delta, exact.gamma, exact.theta};
         std::ofstream file{"../output/" + name + ".csv"};
-        file << tags[0].header() << ",Price,Delta,Gamma,Theta" << std::endl;
-        for (const TagT &tag : tags)
-            file << price(tag) << std::endl;
+        file << tags[0].header()
+             << ",Price,Delta,Gamma,Theta,Price Err,Delta Err,Gamma Err,Theta Err,1st Err,2nd Err" << std::endl;
+        for (const TagT &tag : tags) {
+            PricingOutput<TagT> out = price(tag);
+            PricingOutput<TagT> err = abs(out - benchmark);
+            PricingOutput<TagT> err_1st = err * tag.n, err_2nd = err * tag.n * tag.n;
+            file << out << "," << err.price << "," << err.delta << "," << err.gamma << "," << err.theta << ","
+                 << err_1st.price << "," << err_2nd.price << std::endl;
+        }
     }
 }
